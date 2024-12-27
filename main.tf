@@ -138,36 +138,6 @@ resource "aws_instance" "bastion" {
   }
 }
 
-# EKS Cluster
-resource "aws_eks_cluster" "my_cluster" {
-  name     = "my-cluster"
-  role_arn = aws_iam_role.eks_cluster.arn
-
-  vpc_config {
-    subnet_ids         = [aws_subnet.private_az1.id, aws_subnet.private_az2.id]
-    security_group_ids = [aws_security_group.bastion_sg.id]
-  }
-}
-
-# Node Group
-resource "aws_eks_node_group" "my_node_group" {
-  cluster_name    = aws_eks_cluster.my_cluster.name
-  node_group_name = "my-node-group"
-  node_role_arn   = aws_iam_role.eks_node.arn
-  subnet_ids      = [aws_subnet.private_az1.id, aws_subnet.private_az2.id]
-
-  scaling_config {
-    desired_size = 1
-    max_size     = 1
-    min_size     = 1
-  }
-
-  instance_types = ["t3.medium"]
-  tags = {
-    Name = "eks-node-group"
-  }
-}
-
 # IAM Role for EKS Cluster
 resource "aws_iam_role" "eks_cluster" {
   name = "eks-cluster-role"
@@ -229,6 +199,40 @@ resource "aws_iam_role_policy_attachment" "eks_node_AmazonEKS_CNI_Policy" {
 resource "aws_iam_role_policy_attachment" "eks_node_AmazonEC2ContainerRegistryReadOnly" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
   role       = aws_iam_role.eks_node.name
+}
+
+# EKS Cluster
+resource "aws_eks_cluster" "my_cluster" {
+  name     = "my-cluster"
+  role_arn = aws_iam_role.eks_cluster.arn
+
+  vpc_config {
+    subnet_ids         = [aws_subnet.private_az1.id, aws_subnet.private_az2.id]
+    security_group_ids = [aws_security_group.bastion_sg.id]  # Ensure this is properly referenced
+  }
+}
+
+# Node Group
+resource "aws_eks_node_group" "my_node_group" {
+  cluster_name    = aws_eks_cluster.my_cluster.name
+  node_group_name = "my-node-group"
+  node_role_arn   = aws_iam_role.eks_node.arn
+  subnet_ids      = [aws_subnet.private_az1.id, aws_subnet.private_az2.id]
+
+  scaling_config {
+    desired_size = 1
+    max_size     = 1
+    min_size     = 1
+  }
+
+  instance_types = ["t3.medium"]
+  tags = {
+    Name = "eks-node-group"
+  }
+
+  remote_access {
+    ec2_ssh_key = "MyKeyPair"  # Optional: to SSH into the nodes
+  }
 }
 
 # Outputs
