@@ -61,7 +61,13 @@ resource "kubernetes_service_account" "ebs_csi_controller_sa" {
       "eks.amazonaws.com/role-arn" = aws_iam_role.ebs_csi_driver.arn
     }
   }
+
+  lifecycle {
+    prevent_destroy = true
+    ignore_changes  = [metadata]
+  }
 }
+
 
 # EKS Addon for EBS CSI Driver
 resource "aws_eks_addon" "ebs_csi_driver" {
