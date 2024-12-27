@@ -8,8 +8,8 @@ on:
     inputs:
       action:
         description: 'Action to run (plan, apply, destroy)'
-        required: true
-        default: 'plan'
+        required: false  # Making this optional
+        default: 'plan'  # Default action is 'plan'
 
 permissions:
   contents: read
@@ -42,7 +42,8 @@ jobs:
     # Terraform Action: Plan, Apply, or Destroy
     - name: Terraform Action
       run: |
-        case "${{ github.event.inputs.action }}" in
+        ACTION="${{ github.event.inputs.action || 'plan' }}"  # Default to 'plan' if no action is provided
+        case "$ACTION" in
           plan)
             terraform plan
             ;;
@@ -53,7 +54,7 @@ jobs:
             terraform destroy -auto-approve
             ;;
           *)
-            echo "Invalid action: ${{ github.event.inputs.action }}"
+            echo "Invalid action: $ACTION"
             exit 1
             ;;
         esac
