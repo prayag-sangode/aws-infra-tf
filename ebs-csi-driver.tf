@@ -63,7 +63,6 @@ resource "kubernetes_service_account" "ebs_csi_controller_sa" {
   }
 
   lifecycle {
-    prevent_destroy = true
     ignore_changes  = all
   }
 }
