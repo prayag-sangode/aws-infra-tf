@@ -121,12 +121,17 @@ AWS Secret Key: <replace-me>
    sudo snap install kubectl --classic
    ```
 
-5. **Check Cluster Nodes:**
+5. **Check Cluster Nodes & EBS CSI Driver:**
 
    Get the list of nodes in the Kubernetes cluster:
 
    ```bash
    kubectl get nodes -o wide
+   ```
+ 
+   Check if ebs csi driver is installed
+   ```bash
+   kubectl -n kube-system get all | grep ebs
    ```
 
 6. **Create Deployment:**
