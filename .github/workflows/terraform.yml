@@ -1,0 +1,59 @@
+name: 'AWS IaC using Terraform'
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Choose Terraform action'
+        required: true
+        default: 'plan'
+        type: choice
+        options:
+          - 'plan'
+          - 'apply'
+          - 'destroy'
+
+permissions:
+  contents: read
+
+jobs:
+  terraform:
+    name: 'Terraform'
+    runs-on: ubuntu-latest
+    environment: production
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Set up AWS CLI
+      run: |
+        echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+        echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+
+    - name: Terraform Init
+      run: terraform init
+
+    # Executes the chosen action
+    - name: Terraform Action
+      run: |
+        case ${{ github.event.inputs.action }} in
+          plan)
+            terraform plan
+            ;;
+          apply)
+            terraform apply -auto-approve
+            ;;
+          destroy)
+            terraform destroy -auto-approve
+            ;;
+          *)
+            echo "Invalid action: ${{ github.event.inputs.action }}"
+            exit 1
+            ;;
+        esac
