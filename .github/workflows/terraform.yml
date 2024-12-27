@@ -2,19 +2,14 @@ name: 'AWS IaC using Terraform'
 
 on:
   push:
-    branches: 
-      - main
+    branches: [ "main" ]
+  pull_request:
   workflow_dispatch:
     inputs:
       action:
-        description: 'Choose Terraform action'
+        description: 'Action to run (plan, apply, destroy)'
         required: true
         default: 'plan'
-        type: choice
-        options:
-          - 'plan'
-          - 'apply'
-          - 'destroy'
 
 permissions:
   contents: read
@@ -25,42 +20,40 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
 
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
     defaults:
       run:
         shell: bash
 
     steps:
-      # Checkout the repository
-      - name: Checkout
-        uses: actions/checkout@v3
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v3
 
-      # Configure AWS Credentials
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+    - name: Set up AWS CLI
+      run: |
+        echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+        echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
 
-      # Initialize Terraform
-      - name: Terraform Init
-        run: terraform init
+    # Initialize a new or existing Terraform working directory
+    - name: Terraform Init
+      run: terraform init
 
-      # Run Terraform Action
-      - name: Terraform Action
-        run: |
-          case ${{ github.event.inputs.action }} in
-            plan)
-              terraform plan
-              ;;
-            apply)
-              terraform apply -auto-approve
-              ;;
-            destroy)
-              terraform destroy -auto-approve
-              ;;
-            *)
-              echo "Invalid action: ${{ github.event.inputs.action }}"
-              exit 1
-              ;;
-          esac
+    # Terraform Action: Plan, Apply, or Destroy
+    - name: Terraform Action
+      run: |
+        case "${{ github.event.inputs.action }}" in
+          plan)
+            terraform plan
+            ;;
+          apply)
+            terraform apply -auto-approve
+            ;;
+          destroy)
+            terraform destroy -auto-approve
+            ;;
+          *)
+            echo "Invalid action: ${{ github.event.inputs.action }}"
+            exit 1
+            ;;
+        esac
