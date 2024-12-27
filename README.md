@@ -169,16 +169,4 @@ AWS Secret Key: <replace-me>
     kubectl delete all --all
     ```
 
----
 
-## Notes
-
-- Ensure to securely handle your AWS credentials.
-- Modify the Terraform configurations to suit your needs before applying.
-```
-
-### Key Sections:
-- **AWS CLI commands** to create and delete S3 buckets and DynamoDB tables.
-- **Instructions** for cloning the repo and setting up AWS resources.
-- **Commands to interact with Kubernetes**, including creating deployments and exposing services via LoadBalancer.
-- **Security Considerations** regarding handling AWS credentials.
