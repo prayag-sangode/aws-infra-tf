@@ -8,8 +8,12 @@ on:
     inputs:
       action:
         description: 'Action to run (plan, apply, destroy)'
-        required: false  # Making this optional
+        required: true  # The action input is now required
         default: 'plan'  # Default action is 'plan'
+        options:
+          - plan
+          - apply
+          - destroy
 
 permissions:
   contents: read
