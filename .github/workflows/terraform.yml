@@ -1,6 +1,9 @@
 name: 'AWS IaC using Terraform'
 
 on:
+  push:
+    branches: 
+      - main
   workflow_dispatch:
     inputs:
       action:
@@ -27,33 +30,39 @@ jobs:
         shell: bash
 
     steps:
-    # Checkout the repository to the GitHub Actions runner
-    - name: Checkout
-      uses: actions/checkout@v3
+      # Checkout the repository to the GitHub Actions runner
+      - name: Checkout
+        uses: actions/checkout@v3
 
-    - name: Set up AWS CLI
-      run: |
-        echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
-        echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+      - name: Set up AWS CLI
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          echo "AWS credentials set."
 
-    - name: Terraform Init
-      run: terraform init
+      # Initialize Terraform
+      - name: Terraform Init
+        run: terraform init
 
-    # Executes the chosen action
-    - name: Terraform Action
-      run: |
-        case ${{ github.event.inputs.action }} in
-          plan)
-            terraform plan
-            ;;
-          apply)
-            terraform apply -auto-approve
-            ;;
-          destroy)
-            terraform destroy -auto-approve
-            ;;
-          *)
-            echo "Invalid action: ${{ github.event.inputs.action }}"
-            exit 1
-            ;;
-        esac
+      # Run Terraform Plan by default or execute user-chosen action
+      - name: Terraform Action
+        run: |
+          case ${{ github.event.inputs.action || 'plan' }} in
+            plan)
+              echo "Running Terraform Plan..."
+              terraform plan
+              ;;
+            apply)
+              echo "Running Terraform Apply..."
+              terraform apply -auto-approve
+              ;;
+            destroy)
+              echo "Running Terraform Destroy..."
+              terraform destroy -auto-approve
+              ;;
+            *)
+              echo "Invalid action: ${{ github.event.inputs.action }}"
+              exit 1
+              ;;
+          esac
