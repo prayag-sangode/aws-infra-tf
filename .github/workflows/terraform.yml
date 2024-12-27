@@ -4,16 +4,6 @@ on:
   push:
     branches: [ "main" ]
   pull_request:
-  workflow_dispatch:
-    inputs:
-      action:
-        description: 'Action to run (plan, apply, destroy)'
-        required: true  # The action input is now required
-        default: 'plan'  # Default action is 'plan'
-        options:
-          - plan
-          - apply
-          - destroy
 
 permissions:
   contents: read
@@ -39,26 +29,15 @@ jobs:
         echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
         echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
 
-    # Initialize a new or existing Terraform working directory
+    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
     - name: Terraform Init
       run: terraform init
 
-    # Terraform Action: Plan, Apply, or Destroy
-    - name: Terraform Action
-      run: |
-        ACTION="${{ github.event.inputs.action || 'plan' }}"  # Default to 'plan' if no action is provided
-        case "$ACTION" in
-          plan)
-            terraform plan
-            ;;
-          apply)
-            terraform apply -auto-approve
-            ;;
-          destroy)
-            terraform destroy -auto-approve
-            ;;
-          *)
-            echo "Invalid action: $ACTION"
-            exit 1
-            ;;
-        esac
+
+    # Generates an execution plan for Terraform
+    - name: Terraform Plan
+      run: terraform plan
+
+      # On push to "main", build or change infrastructure according to Terraform configuration files
+    - name: Terraform Apply
+      run: terraform destroy -auto-approve
