@@ -58,15 +58,15 @@ resource "kubernetes_service_account" "ebs_csi_controller_sa" {
     name      = "ebs-csi-controller-sa"
     namespace = "kube-system"
     annotations = {
-      "eks.amazonaws.com/role-arn" = aws_iam_role.ebs_csi_driver.arn
+      "eks.amazonaws.com/role-arn" = "arn:aws:iam::058264559032:role/ebs-csi-driver"
     }
   }
 
   lifecycle {
-    ignore_changes = all
+    prevent_destroy = true
+    ignore_changes  = all
   }
 }
-
 
 # EKS Addon for EBS CSI Driver
 resource "aws_eks_addon" "ebs_csi_driver" {
