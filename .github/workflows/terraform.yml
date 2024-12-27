@@ -30,35 +30,33 @@ jobs:
         shell: bash
 
     steps:
-      # Checkout the repository to the GitHub Actions runner
+      # Checkout the repository
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Set up AWS CLI
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        run: |
-          echo "AWS credentials set."
+      # Configure AWS Credentials
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
 
       # Initialize Terraform
       - name: Terraform Init
         run: terraform init
 
-      # Run Terraform Plan by default or execute user-chosen action
+      # Run Terraform Plan, Apply, or Destroy
       - name: Terraform Action
         run: |
           case ${{ github.event.inputs.action || 'plan' }} in
             plan)
-              echo "Running Terraform Plan..."
               terraform plan
               ;;
             apply)
-              echo "Running Terraform Apply..."
               terraform apply -auto-approve
               ;;
             destroy)
-              echo "Running Terraform Destroy..."
               terraform destroy -auto-approve
               ;;
             *)
