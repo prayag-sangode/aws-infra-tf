@@ -46,10 +46,10 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
-      # Run Terraform Plan, Apply, or Destroy
+      # Run Terraform Action
       - name: Terraform Action
         run: |
-          case ${{ github.event.inputs.action || 'plan' }} in
+          case ${{ github.event.inputs.action }} in
             plan)
               terraform plan
               ;;
